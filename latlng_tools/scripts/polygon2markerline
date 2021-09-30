@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+
+import rclpy
+
+from rclpy.node import Node
+
+#from geometry_msgs.msg import PolygonStamped, Point, Vector3
+from geometry_msgs.msg import Point, Vector3
+from visualization_msgs.msg import Marker
+from std_msgs.msg import ColorRGBA
+#from lawnmower_msgs.msg import LatLonArray
+from latlng_msgs.msg import PolygonStamped64
+
+class Polygon2MarkerLine(Node):
+    def __init__(self):
+        super().__init__('polygon2markerline')
+
+        self.sub_topic_name = self.declare_parameter('sub_topic_name', 'polygon').get_parameter_value().string_value
+        self.pub_topic_name = self.declare_parameter('pub_topic_name', 'marker').get_parameter_value().string_value
+
+        marker_color_param = self.declare_parameter('marker_color_rgb', [0.0, 0.0, 0.0]).get_parameter_value().double_array_value
+        self.marker_color = ColorRGBA()
+        self.marker_color.r = marker_color_param[0]
+        self.marker_color.g = marker_color_param[1]
+        self.marker_color.b = marker_color_param[2]
+        self.marker_color.a = 1.0
+
+        #point_color_param = self.declare_parameter('point_color_rgb', [1.0, 1.0, 1.0]).get_parameter_value().double_array_value
+        #self.point_color = ColorRGBA()
+        #self.point_color.r = point_color_param[0]
+        #self.point_color.g = point_color_param[0]
+        #self.point_color.b = point_color_param[0]
+        #self.point_color.a = 1.0
+
+        marker_scale_param = self.declare_parameter('marker_scale', [0.1, 1.0, 1.0]).get_parameter_value().double_array_value
+        self.marker_scale = Vector3()
+        self.marker_scale.x = marker_scale_param[0]
+        self.marker_scale.y = marker_scale_param[1]
+        self.marker_scale.z = marker_scale_param[2]
+
+        #self.create_subscription(PolygonStamped, self.sub_topic_name, self.callback_polygon, 1)
+        #self.create_subscription(LatLonArray, self.sub_topic_name, self.callback_polygon, 1)
+        self.create_subscription(PolygonStamped64, self.sub_topic_name, self.callback_polygon, 1)
+
+        self.pub_marker = self.create_publisher(Marker, self.pub_topic_name, 1)
+
+        self.get_logger().info('Node Start: polygon2markerline')
+
+
+    def callback_polygon(self, data):
+        #pub_msg = MarkerLine()
+        pub_msg = Marker()
+        pub_msg.header = data.header
+        pub_msg.type = Marker.LINE_STRIP
+        pub_msg.action = Marker.ADD
+        
+        for point in data.polygon.points:
+        #for point in data.points:
+            '''
+            pub_point = Point()
+            pub_point.x = point.lon
+            pub_point.y = point.lat
+            pub_point.z = 0.0
+            '''
+            #self.get_logger().info('{}, {}, {}'.format(point.x, point.y, point.z, pub_point.x, pub_point.y, pub_point.z))
+
+            #pub_msg.points.append(pub_point)
+            pub_msg.points.append(point)
+            #pub_msg.colors.append(self.point_color)
+
+        pub_msg.scale = self.marker_scale
+        pub_msg.color = self.marker_color
+        
+        self.pub_marker.publish(pub_msg)
+        self.get_logger().info('Publish Marker')
+
+
+
+if __name__ == '__main__':
+    try:
+        rclpy.init()
+        node = Polygon2MarkerLine()
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        node.get_logger().info('Node Finish: polygon2markerline')
+        node.destroy_node()
+        rclpy.shutdown()

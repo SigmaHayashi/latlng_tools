@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+
+import rclpy
+
+from rclpy.node import Node
+
+#from geometry_msgs.msg import PolygonStamped, Point32
+from geometry_msgs.msg import PolygonStamped, Point
+#from lawnmower_msgs.msg import LatLonArray, LatLon
+from latlng_msgs.msg import PolygonStamped64
+
+import math
+import pyproj
+
+class Pos2LatLngPolygon(Node):
+    def __init__(self):
+        super().__init__('pos2latlng_polygon')
+
+        self.proj_transformer = pyproj.Transformer.from_crs('EPSG:2444', 'EPSG:4326', always_xy=True)
+
+        #self.map_frame = self.declare_parameter('map_frame_name', 'map').get_parameter_value().string_value
+        self.origin_lat = self.declare_parameter('origin_lat', 33.0).get_parameter_value().double_value
+        self.origin_lng = self.declare_parameter('origin_lng', 130.0).get_parameter_value().double_value
+        self.angle_offset = self.declare_parameter('angle_offset', 0.0).get_parameter_value().double_value * math.pi / 180.0
+        self.scale_offset = self.declare_parameter('scale_offset', 1.0).get_parameter_value().double_value
+
+        self.sub_topic_name = self.declare_parameter('sub_topic_name', 'polygon').get_parameter_value().string_value
+        self.pub_topic_name = self.declare_parameter('pub_topic_name', 'latlon').get_parameter_value().string_value
+
+        self.create_subscription(PolygonStamped, self.sub_topic_name, self.callback_pos2latlng, 1)
+
+        #self.pub_polygon = self.create_publisher(PolygonStamped, self.pub_topic_name, 1)
+        #self.pub_polygon = self.create_publisher(LatLonArray, self.pub_topic_name, 1)
+        self.pub_polygon = self.create_publisher(PolygonStamped64, self.pub_topic_name, 1)
+
+        self.get_logger().info('Node Start: pos2latlng_polygon')
+
+        self.x_origin, self.y_origin = pyproj.Transformer.from_crs('EPSG:4326', 'EPSG:2444', always_xy=True).transform(self.origin_lng, self.origin_lat)
+    
+    def pos2latlng(self, x, y):
+        tx = x / self.scale_offset
+        ty = y / self.scale_offset
+
+        x_ref = self.x_origin + math.cos(self.angle_offset) * tx + math.sin(self.angle_offset) * ty
+        y_ref = self.y_origin + math.cos(self.angle_offset) * ty - math.sin(self.angle_offset) * tx
+
+        lng, lat = self.proj_transformer.transform(x_ref, y_ref)
+
+        #print('Pos -> LatLng : {0:.2f}, {1:.2f} -> {2}, {3}'.format(x, y, lat, lng))
+        #self.get_logger().info('{}, {}: {}, {}: {}, {}: {}, {}'.format(x, y, tx, ty, x_ref, y_ref, lng, lat))
+
+        return lat, lng
+
+    def callback_pos2latlng(self, data):
+        #pub_msg = PolygonStamped()
+        #pub_msg = LatLonArray()
+        pub_msg = PolygonStamped64()
+        pub_msg.header.stamp = data.header.stamp
+        pub_msg.header.frame_id = 'wgs84'
+
+        i = 0
+        for point in data.polygon.points:
+            lat, lng = self.pos2latlng(point.x, point.y)
+            self.get_logger().info('point[{}]: {:.2f}, {:.2f} -> {:.6f}, {:.6f}'.format(i, point.x, point.y, lat, lng))
+            i = i + 1
+            
+            """
+            point_add = Point32()
+            point_add.x = lng
+            point_add.y = lat
+            point_add.z = 0.0
+            """
+            """
+            point_add = LatLon()
+            point_add.lat = lat
+            point_add.lon = lng
+            """
+            point_add = Point()
+            point_add.x = lng
+            point_add.y = lat
+            point_add.z = 0.0
+
+            pub_msg.polygon.points.append(point_add)
+            #pub_msg.points.append(point_add)
+        
+        self.pub_polygon.publish(pub_msg)
+
+
+if __name__ == '__main__':
+    try:
+        rclpy.init()
+        node = Pos2LatLngPolygon()
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        node.get_logger().info('Node Finish: pos2latlng_polygon')
+        node.destroy_node()
+        rclpy.shutdown()
