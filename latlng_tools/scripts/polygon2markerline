@@ -45,7 +45,10 @@ class Polygon2MarkerLine(Node):
 
         self.pub_marker = self.create_publisher(Marker, self.pub_topic_name, 1)
 
+        self.log_print = self.declare_parameter('log_print', True).get_parameter_value().bool_value
+
         self.get_logger().info('Node Start: polygon2markerline')
+
 
 
     def callback_polygon(self, data):
@@ -73,7 +76,10 @@ class Polygon2MarkerLine(Node):
         pub_msg.color = self.marker_color
         
         self.pub_marker.publish(pub_msg)
-        self.get_logger().info('Publish Marker')
+
+        #self.get_logger().info('Publish Marker')
+        if self.log_print:
+            self.get_logger().info('Publish Marker')
 
 
 

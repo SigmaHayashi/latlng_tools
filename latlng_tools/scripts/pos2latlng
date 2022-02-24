@@ -58,7 +58,7 @@ class Pos2LatLng(Node):
         #print('(x, y)     = ({:.2f}, {:.2f})'.format(x, y))
         #print('(lat, lng) = ({}, {})'.format(lat, lng))
         #print('-----')
-        print('Pos -> LatLng : {0:.2f}, {1:.2f} -> {2}, {3}'.format(x, y, lat, lng))
+        print('Pos -> LatLng : {0:.2f}, {1:.2f} -> {2:.7f}, {3:.7f}'.format(x, y, lat, lng))
 
         return lat, lng
 

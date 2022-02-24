@@ -3,6 +3,7 @@
 
 import rclpy
 from rclpy.node import Node
+from rclpy.duration import Duration
 
 from sensor_msgs.msg import NavSatFix
 
@@ -33,16 +34,23 @@ class Fix2Marker(Node):
         self.marker_scale.y = marker_scale_param[1]
         self.marker_scale.z = marker_scale_param[2]
 
+        self.marker_lifetime = self.declare_parameter('marker_lifetime', 0.0).get_parameter_value().double_value
+
         self.create_subscription(NavSatFix, sub_topic_name, self.callback_fix, 10)
 
         self.pub_marker = self.create_publisher(Marker, pub_topic_name, 10)
+
+        self.log_print = self.declare_parameter('log_print', True).get_parameter_value().bool_value
 
         self.get_logger().info('Node Start: fix2marker')
 
 
     def callback_fix(self, data):
         #self.get_logger().info('Callback Fix')
-        print('Callback Fix')
+        #print('Callback Fix')
+        if self.log_print:
+            print('Callback Fix')
+        
         pub_msg = Marker()
         pub_msg.header.stamp = data.header.stamp
         pub_msg.header.frame_id = 'wgs84'
@@ -61,6 +69,8 @@ class Fix2Marker(Node):
 
         pub_msg.scale = self.marker_scale
         pub_msg.color = self.marker_color
+
+        pub_msg.lifetime = Duration(seconds=int(self.marker_lifetime)).to_msg()
 
         self.pub_marker.publish(pub_msg)
 

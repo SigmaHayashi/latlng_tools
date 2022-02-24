@@ -57,7 +57,9 @@ def generate_launch_description():
 
                 'marker_keep': 50,
                 'marker_color_rgb': [0.2, 1.0, 0.2],
-                'marker_scale': [0.2, 0.2, 0.2]
+                'marker_scale': [0.3, 0.3, 0.3],
+
+                'log_print': False
             }]
         ),
         Node(
@@ -90,7 +92,9 @@ def generate_launch_description():
 
                 'marker_keep': 1000,
                 'marker_color_rgb': [1.0, 0.0, 1.0],
-                'marker_scale': [0.2, 0.2, 0.2]
+                'marker_scale': [0.3, 0.3, 0.3],
+
+                'log_print': False
             }]
         )
     ])

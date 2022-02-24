@@ -79,7 +79,7 @@ class LatLng2Pos(Node):
     y = ty * self.scale_offset
     return x, y
 
-  def callback_latlng2pos(self, data):
+  def callback_latlng2pos(self, data:NavSatFix):
 
     x, y = self._latlng2xy(data.latitude, data.longitude)
 
@@ -144,10 +144,14 @@ class LatLng2Pos(Node):
     odom.pose.pose.orientation.y = 0.0
     odom.pose.pose.orientation.z = 0.0
     odom.pose.pose.orientation.w = 1.0
+
+    odom.pose.covariance[0] = data.position_covariance[0]
+    odom.pose.covariance[7] = data.position_covariance[4]
     
     print("LatLng -> Pos", end=' ')
     if self.solutions_flag == "all":
-      self.odom_pub.publish(odom)
+      if data.status.status != -1:
+        self.odom_pub.publish(odom)
       print("[All] : All solutions are being published")
     elif self.solutions_flag == "fix":
       if data.status.status == self.fix_value:

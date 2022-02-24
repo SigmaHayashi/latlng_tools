@@ -56,8 +56,45 @@
         #angle_offset: 0.0
         #scale_offset: 1.0
 
-        ## experiment 20210819
-        origin_lat: 33.600500
-        origin_lng: 130.206600
-        angle_offset: 0.0
+        ## experiment 20210819 Ito Cumpus Ground
+        #origin_lat: 33.600500
+        #origin_lng: 130.206600
+        #angle_offset: 0.0
+        #scale_offset: 1.0
+
+        ## experiment 20211029 Ito Cumpus Ground
+        #origin_lat: 33.600000
+        #origin_lng: 130.206300
+        #angle_offset: 0.0
+        #scale_offset: 1.0
+
+        ## experiment 20211129 farm
+        #angle_offset: 0.0
+        #scale_offset: 1.0
+        # 1
+        #origin_lat: 33.250684
+        #origin_lng: 130.581483
+        # 2
+        #origin_lat: 33.251066
+        #origin_lng: 130.581475
+        # 3
+        #origin_lat: 33.251282
+        #origin_lng: 130.581512
+        # 4
+        #origin_lat: 33.250798
+        #origin_lng: 130.581051
+        # 5
+        #origin_lat: 33.251873
+        #origin_lng: 130.584095
+        # 6
+        #origin_lat: 33.232414
+        #origin_lng: 130.526730
+        # 7
+        #origin_lat: 33.233486
+        #origin_lng: 130.526649
+
+        ## experiment karadomari village
+        origin_lat: 33.649500
+        origin_lng: 130.232400
+        angle_offset: 25.0 # 刈り取る方向が時計回りにかわる
         scale_offset: 1.0
